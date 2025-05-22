@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Talk It Out</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #fddde6, #ffdada);
+      color: #2c2c2c;
+      overflow-x: hidden;
+    }
+    .night-sky {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background: transparent;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 2s infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    .container {
+      position: relative;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      z-index: 1;
+    }
+    .hero-img {
+      width: 100%;
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+    .search-box {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    input[type="text"], input[type="email"], input[type="password"], textarea {
+      width: 80%;
+      padding: 10px;
+      border: 2px solid #aaa;
+      border-radius: 12px;
+      font-size: 1.2em;
+      margin: 5px 0;
+    }
+    .intro-text {
+      font-size: 1.1em;
+      line-height: 1.6;
+      margin: 20px auto;
+      text-align: center;
+      max-width: 90%;
+    }
+    .signin-form {
+      text-align: center;
+      margin: 20px auto;
+      background: #fff8;
+      padding: 10px;
+      border-radius: 10px;
+    }
+    .story {
+      background: #fff;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .like {
+      cursor: pointer;
+      color: red;
+      font-size: 1.2em;
+    }
+    #storyForm {
+      text-align: center;
+      margin: 20px auto;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="night-sky" id="sky"></div>
+<div class="container">
+  <img class="hero-img" src="friends-fun.jpeg" alt="Gen Z having fun">
+  <img class="hero-img" src="friends-talking.jpeg" alt="Gen Z talking">
+  <img class="hero-img" src="friends-smiling.jpeg" alt="Gen Z smiling">
+  <img class="hero-img" src="laughing-image.jpeg" alt="Gen Z laughing">
+
+  <h1>Talk It Out</h1>
+
+  <div class="search-box">
+    <input type="text" id="userInput" placeholder="what bothers your sweet heart, sweetheart??">
+  </div>
+
+  <div class="intro-text">
+    <p>You are not at all alone. Each one, every one of us, has vulnerabilities, weakness, helplessness, powerlessness, guilt, grit, etc.</p>
+    <p>Your heart is beating with billions and trillions of hearts feeling the same, agonizing the same.</p>
+    <p>Talk It Out is here for folks like you — a safe, anonymous place for healing without revealing yourself.</p>
+    <p>Your scars make you beautiful.</p>
+    <p>Connect, learn, and heal together.</p>
+    <p>Find an exquisite heart like yours and connect...</p>
+  </div>
+
+  <div class="signin-form">
+    <input type="email" id="email" placeholder="Email"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button id="loginBtn">Sign In</button>
+    <button id="signupBtn">Sign Up</button>
+    <p id="loginStatus"></p>
+  </div>
+
+  <div id="storyForm">
+    <textarea id="userStory" rows="4" placeholder="Write your story here..."></textarea><br>
+    <button id="submitStory">Post Story</button>
+  </div>
+
+  <div id="stories"></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-app.js";
+  import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDLeTNH_SOtJah57CT6K7P2bFIcnLFWBlQ",
+    authDomain: "talk-it-out-4febb.firebaseapp.com",
+    projectId: "talk-it-out-4febb",
+    storageBucket: "talk-it-out-4febb.appspot.com",
+    messagingSenderId: "1014818666988",
+    appId: "1:1014818666988:web:511c220c736b5cb573a8c9",
+    databaseURL: "https://talk-it-out-4febb-default-rtdb.firebaseio.com"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  document.getElementById("userInput").addEventListener("change", function() {
+    const message = this.value.trim();
+    if (message) {
+      push(ref(db, 'messages'), {
+        text: message,
+        likes: 0
+      });
+      this.value = '';
+    }
+  });
+
+  document.getElementById("loginBtn").addEventListener("click", () => {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        document.getElementById("loginStatus").innerText = "✅ Signed in successfully!";
+        document.getElementById("storyForm").style.display = "block";
+      })
+      .catch((error) => {
+        document.getElementById("loginStatus").innerText = "❌ " + error.message;
+      });
+  });
+
+  document.getElementById("signupBtn").addEventListener("click", () => {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        document.getElementById("loginStatus").innerText = "🎉 Account created & signed in!";
+        document.getElementById("storyForm").style.display = "block";
+      })
+      .catch((error) => {
+        document.getElementById("loginStatus").innerText = "❌ " + error.message;
+      });
+  });
+
+  document.getElementById("submitStory").addEventListener("click", () => {
+    const story = document.getElementById("userStory").value.trim();
+    if (story) {
+      push(ref(db, 'messages'), {
+        text: story,
+        likes: 0
+      });
+      document.getElementById("userStory").value = "";
+    }
+  });
+
+  const storiesDiv = document.getElementById("stories");
+
+  function loadStories() {
+    onValue(ref(db, 'messages'), (snapshot) => {
+      storiesDiv.innerHTML = '';
+      const data = snapshot.val();
+      if (data) {
+        Object.entries(data).reverse().forEach(([id, msg]) => {
+          const div = document.createElement("div");
+          div.className = "story";
+          div.innerHTML = `
+            <p>${msg.text}</p>
+            <span class="like" data-id="${id}">❤️ ${msg.likes || 0}</span>
+            <button class="deleteBtn" data-id="${id}">🗑️ Delete</button>
+          `;
+          storiesDiv.appendChild(div);
+        });
+
+        document.querySelectorAll('.like').forEach(span => {
+          span.addEventListener('click', () => {
+            const id = span.getAttribute('data-id');
+            const currentLikes = parseInt(span.textContent.replace(/[^0-9]/g, ''));
+            update(ref(db, 'messages/' + id), { likes: currentLikes + 1 });
+          });
+        });
+
+        document.querySelectorAll('.deleteBtn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            remove(ref(db, 'messages/' + id));
+          });
+        });
+      }
+    });
+  }
+
+  loadStories();
+  setInterval(loadStories, 10000);
+</script>
+
+<script>
+  const sky = document.getElementById("sky");
+  for (let i = 0; i < 100; i++) {
+    const star = document.createElement("div");
+    star.classList.add("star");
+    star.style.top = Math.random() * 100 + "%";
+    star.style.left = Math.random() * 100 + "%";
+    sky.appendChild(star);
+  }
+</script>
+</body>
+</html>
