@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Talk It Out - Interactive</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f9f9f9; }
+    h1 { text-align: center; color: #660000; }
+    textarea { width: 100%; height: 100px; margin-top: 10px; }
+    button { background-color: #cc0000; color: white; border: none; padding: 10px 20px; margin-top: 10px; cursor: pointer; }
+    button:hover { background-color: #a00000; }
+    #messages { margin-top: 30px; }
+    .message { background: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <h1>Talk It Out</h1>
+  <p>You are not alone. Share what’s on your heart below anonymously.</p>
+
+  <form id="talkForm">
+    <label for="message">What bothers your heart, Sweetheart??</label><br/>
+    <textarea id="message" placeholder="Write your thoughts here..."></textarea><br/>
+    <button type="submit">Submit</button>
+  </form>
+
+  <div id="status"></div>
+
+  <div id="messages">
+    <h2>Shared Messages</h2>
+    <!-- Messages will appear here -->
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
+    // Your Firebase config here - replace with your own project info
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const form = document.getElementById('talkForm');
+    const messageInput = document.getElementById('message');
+    const status = document.getElementById('status');
+    const messagesDiv = document.getElementById('messages');
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const message = messageInput.value.trim();
+      if (!message) {
+        status.textContent = 'Please write something before submitting.';
+        return;
+      }
+      status.textContent = 'Sending...';
+
+      // Push message to Firebase Database
+      db.ref('messages').push({
+        text: message,
+        timestamp: Date.now()
+      })
+      .then(() => {
+        status.textContent = 'Thank you for sharing.';
+        messageInput.value = '';
+      })
+      .catch(err => {
+        status.textContent = 'Error: ' + err.message;
+      });
+    });
+
+    // Load and display messages
+    function loadMessages() {
+      db.ref('messages').limitToLast(10).on('value', snapshot => {
+        messagesDiv.innerHTML = '<h2>Shared Messages</h2>';
+        snapshot.forEach(childSnapshot => {
+          const msg = childSnapshot.val();
+          const div = document.createElement('div');
+          div.className = 'message';
+          div.textContent = msg.text;
+          messagesDiv.appendChild(div);
+        });
+      });
+    }
+
+    loadMessages();
+  </script>
+</body>
+</html>
