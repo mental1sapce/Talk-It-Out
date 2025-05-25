@@ -1,0 +1,65 @@
+<!-- index.html - Homepage with website name, search bar, and intro -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talk It Out</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #fddde6, #ffdada);
+      color: #2c2c2c;
+      overflow-x: hidden;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+    input[type="text"] {
+      width: 80%;
+      padding: 12px;
+      border: 2px solid #aaa;
+      border-radius: 12px;
+      font-size: 1.2em;
+      margin: 20px 0;
+    }
+    .intro-text {
+      font-size: 1.1em;
+      line-height: 1.6;
+      margin: 20px auto;
+      max-width: 90%;
+    }
+    .signin-button {
+      padding: 10px 20px;
+      font-size: 1.2em;
+      border-radius: 10px;
+      border: none;
+      background-color: #f06292;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Talk It Out</h1>
+    <input type="text" placeholder="What bothers your sweet heart, sweetheart??">
+
+    <div class="intro-text">
+      <p>You are not alone. Every one of us has vulnerabilities, weakness, helplessness...</p>
+      <p>Talk It Out is here — a safe, anonymous place for healing.</p>
+      <p>Connect. Learn. Heal. Share your story anonymously.</p>
+    </div>
+
+    <button class="signin-button" onclick="window.location.href='write.html'">Start Sharing</button>
+  </div>
+</body>
+</html>
